@@ -3,6 +3,9 @@ use std::path::PathBuf;
 use std::process;
 use ini::ini;
 
+type ConfigHashMap = HashMap<String, HashMap<String, Option<String>>>;
+
+
 pub struct GitRepository {
     pub worktree: PathBuf,
     gitdir: PathBuf,
@@ -17,7 +20,7 @@ fn die(msg: &str) {
 impl GitRepository {
     pub fn new(worktree: PathBuf) -> Self {
         let gitdir = worktree.join(".git");
-        let conf: HashMap<String, HashMap<String, Option<String>>> = HashMap::new();
+        let conf: ConfigHashMap = HashMap::new();
         Self { worktree, gitdir, conf }
     }
 
