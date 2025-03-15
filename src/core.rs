@@ -44,16 +44,17 @@ impl GitRepository {
 
     pub fn create_new_repo(worktree: PathBuf) {
         let repo = GitRepository::new(worktree);
-        path_should_not_exist(&repo.worktree, "Already a git repository");
+        path_should_not_exist(&repo.gitdir, "Already a git repository");
 
         create_path_or_die!(dir: repo.gitdir.clone(), "Failed to initialize repository");
         create_path_or_die!(dir: repo.gitdir.clone().join("objects"), "Failed to create objects directory");
+        create_path_or_die!(dir: repo.gitdir.clone().join("refs"), "Failed to create refs directory");
         create_path_or_die!(dir: repo.gitdir.clone().join("refs").join("heads"), "Failed to create git refs/head directory");
         create_path_or_die!(dir: repo.gitdir.clone().join("refs").join("tags"), "Failed to create git refs/tags directory");
         create_path_or_die!(file: repo.gitdir.clone().join("HEAD"), &"ref: refs/heads/master\n", "Failed to write HEAD file");
         create_path_or_die!(
             file: repo.gitdir.clone().join("HEAD"),
-            "Unnamed repository; edit this file 'description' to name the repository.\n",
+            "ref: refs/heads/master\n",
             "Failed to write description file");
 
         let mut config = Ini::new();
@@ -64,5 +65,6 @@ impl GitRepository {
         if let Err(_) = config.write(repo.gitdir.join("config")) {
             die!("Failed to write config file");
         }
+        println!("Git repository initialized in {}", repo.worktree.display());
     }
 }

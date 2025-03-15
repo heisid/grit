@@ -14,15 +14,15 @@ macro_rules! die {
 #[macro_export]
 macro_rules! create_path_or_die {
     (dir: $path:expr, $message:expr) => {
-        if let Err(_) =  std::fs::create_dir($path) {
-        die!($message);
+        if let Err(e) =  std::fs::create_dir($path) {
+            die!(format!("{}\nError: {}", $message, e.to_string()));
         }
     };
 
     (file: $path:expr, $content:expr, $message:expr) => {
         if let Ok(mut file) = std::fs::File::create($path) {
-            if let Err(_) = file.write_all($content.as_ref()) {
-                die!($message);
+            if let Err(e) = file.write_all($content.as_ref()) {
+                die!(format!("{}\nError: {}", $message, e.to_string()));
             }
         } else {
             die!($message);
