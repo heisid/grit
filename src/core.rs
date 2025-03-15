@@ -46,6 +46,9 @@ impl GitRepository {
         let repo = GitRepository::new(worktree);
         path_should_not_exist(&repo.gitdir, "Already a git repository");
 
+        if !repo.worktree.exists() {
+            create_path_or_die!(dir: repo.worktree.clone(), "Could not create worktree");
+        }
         create_path_or_die!(dir: repo.gitdir.clone(), "Failed to initialize repository");
         create_path_or_die!(dir: repo.gitdir.clone().join("objects"), "Failed to create objects directory");
         create_path_or_die!(dir: repo.gitdir.clone().join("refs"), "Failed to create refs directory");
