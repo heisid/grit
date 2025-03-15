@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 pub type ConfigHashMap = HashMap<String, HashMap<String, Option<String>>>;
 
@@ -27,4 +28,16 @@ macro_rules! create_path_or_die {
             die!($message);
         }
     };
+}
+
+pub fn path_should_exist(path: &PathBuf, message: &str) {
+    if !path.exists() {
+        die!(message);
+    }
+}
+
+pub fn path_should_not_exist(path: &PathBuf, message: &str) {
+    if path.exists() {
+        die!(message);
+    }
 }
