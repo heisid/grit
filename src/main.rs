@@ -1,9 +1,10 @@
-mod core;
+mod repository;
 mod utilities;
+mod object;
 
 use std::path::PathBuf;
 use clap::{Parser, Subcommand};
-use crate::core::GitRepository;
+use crate::repository::GitRepository;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]

@@ -54,7 +54,7 @@ impl GitRepository {
         create_path_or_die!(dir: repo.gitdir.clone().join("refs"), "Failed to create refs directory");
         create_path_or_die!(dir: repo.gitdir.clone().join("refs").join("heads"), "Failed to create git refs/head directory");
         create_path_or_die!(dir: repo.gitdir.clone().join("refs").join("tags"), "Failed to create git refs/tags directory");
-        create_path_or_die!(file: repo.gitdir.clone().join("HEAD"), &"ref: refs/heads/master\n", "Failed to write HEAD file");
+        create_path_or_die!(file: repo.gitdir.clone().join("HEAD"), "ref: refs/heads/master\n", "Failed to write HEAD file");
         create_path_or_die!(
             file: repo.gitdir.clone().join("HEAD"),
             "ref: refs/heads/master\n",

@@ -21,7 +21,7 @@ macro_rules! create_path_or_die {
 
     (file: $path:expr, $content:expr, $message:expr) => {
         if let Ok(mut file) = std::fs::File::create($path) {
-            if let Err(e) = file.write_all($content.as_ref()) {
+            if let Err(e) = write!(file, $content) {
                 die!(format!("{}\nError: {}", $message, e.to_string()));
             }
         } else {
