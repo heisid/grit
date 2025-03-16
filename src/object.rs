@@ -1,8 +1,8 @@
-use std::fs::File;
-use std::io::{BufReader, Read};
-use std::path::PathBuf;
-use flate2::read::ZlibDecoder;
 use crate::die;
+use flate2::read::ZlibDecoder;
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
 
 pub enum GitObjectType {
     Blob,
@@ -12,7 +12,7 @@ pub enum GitObjectType {
     Undefined,
 }
 
-struct GitObject {
+pub struct GitObject {
     object_type: GitObjectType,
     size: usize,
     data: Vec<u8>,
@@ -27,42 +27,42 @@ impl GitObject {
         }
     }
 
-    fn from_file(path: PathBuf) -> Self {
+    pub fn from_file(path: PathBuf) -> Self {
         if !path.is_file() {
             return Self::new();
         }
         if let Ok(compressed_content) = File::open(path.clone()) {
             let sha = path.file_name().unwrap().to_str().unwrap();
-            let decoder = ZlibDecoder::new(BufReader::new(compressed_content));
-            let mut reader = ZlibDecoder::new(decoder);
+            let mut decoder = ZlibDecoder::new(compressed_content);
+            let mut decompressed = Vec::new();
+            decoder.read_to_end(&mut decompressed).unwrap();
 
             let mut type_buffer = Vec::new();
             let mut size_buffer = Vec::new();
             let mut data = Vec::new();
-            let mut byte = [0u8; 1];
 
             let mut current_segment: u8 = 0; // 0: type, 1: size, 2: content
-            while reader.read_exact(&mut byte).is_ok() {
+            decompressed.iter().for_each(|&byte| {
                 match current_segment {
                     0 => {
-                        if byte[0] != b' ' {
-                            type_buffer.push(byte[0]);
+                        if byte != b' ' {
+                            type_buffer.push(byte);
                         } else {
                             current_segment += 1;
                         }
                     }
                     1 => {
-                        if byte[0] == b'\x00' {
-                            size_buffer.push(byte[0]);
+                        if byte != 0 {
+                            size_buffer.push(byte);
                         } else {
                             current_segment += 1;
                         }
                     }
                     _ => {
-                        data.push(byte[0]);
+                        data.push(byte);
                     }
                 }
-            }
+            });
             let object_type = match String::from_utf8_lossy(&type_buffer).to_string().as_str() {
                 "commit" => { GitObjectType::Commit }
                 "tree" => { GitObjectType::Tree }
@@ -79,6 +79,9 @@ impl GitObject {
             let Ok(size) = String::from_utf8_lossy(&size_buffer).to_string().parse::<usize>() else {
                 die!("Malformed object {}, unknown size", sha);
             };
+            if data.len() != size {
+                die!("Malformed object {}, size doesn't match", sha, size);
+            }
             Self {
                 object_type,
                 size,
