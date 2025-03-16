@@ -5,10 +5,18 @@ pub type ConfigHashMap = HashMap<String, HashMap<String, Option<String>>>;
 
 #[macro_export]
 macro_rules! die {
-    ($message:expr) => {
-        println!("{}", $message);
-        std::process::exit(1);
-    }
+    ($msg:expr) => {
+        {
+            println!("{}", $msg);
+            std::process::exit(1);
+        }
+    };
+    ($fmt:expr, $($args:tt)*) => {
+        {
+            println!($fmt, $($args)*);
+            std::process::exit(1);
+        }
+    };
 }
 
 #[macro_export]
