@@ -9,7 +9,7 @@ use std::path::PathBuf;
 pub struct GitRepository {
     pub worktree: PathBuf,
     gitdir: PathBuf,
-    conf: HashMap<String, HashMap<String, Option<String>>>
+    conf: ConfigHashMap
 }
 
 impl GitRepository {
