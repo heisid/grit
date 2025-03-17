@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 use crate::{create_path_or_die, die};
 use flate2::read::{ZlibDecoder, ZlibEncoder};
@@ -112,5 +113,66 @@ impl GitObject {
             .write(true)
             .open(object_dir.join(&sha[2..])).unwrap();
         file.write_all(compressed.as_slice()).unwrap();
+    }
+}
+
+pub struct GitCommit {
+    header: HashMap<String, String>,
+    message: String,
+}
+
+impl GitCommit {
+    pub fn new() -> Self {
+        Self {
+            header: HashMap::new(),
+            message: String::new(),
+        }
+    }
+
+    fn deserialize(data: &Vec<u8>) -> Self {
+        let string_rep = String::from_utf8(data.clone());
+        if string_rep.is_err() {
+            die!("Failed to parse commit data");
+        }
+        let string_rep = string_rep.unwrap();
+        let mut is_message = false;
+        let mut header: HashMap<String, String> = HashMap::new();
+        let mut message = String::new();
+        let mut last_key: Option<String> = None;
+        for line in string_rep.lines() {
+            if is_message {
+                message.push_str(format!("\n{}", line).as_str());
+                continue;
+            }
+
+            if line == "" {
+                is_message = true;
+                continue;
+            }
+
+            if line.starts_with(" ") && last_key.is_some() {
+                let key = last_key.clone().unwrap();
+                match header.get(&key) {
+                    Some(val) => {
+                        let mut new_val = val.clone();
+                        new_val.push_str(format!("\n{}", line).as_str());
+                        header.insert(key, new_val);
+                    }
+                    None => {
+                        header.insert(key, line.to_string());
+                    }
+                }
+            } else {
+                let mut line_iter = line.splitn(2, ' ');
+                let key = line_iter.next().unwrap();
+                let val = line_iter.next().unwrap();
+                header.insert(key.to_string(), val.to_string());
+                last_key = Some(key.to_string());
+            }
+        }
+        Self {
+            header,
+            message,
+        }
     }
 }
