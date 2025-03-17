@@ -2,9 +2,9 @@ mod repository;
 mod utilities;
 mod object;
 
-use std::path::PathBuf;
-use clap::{Parser, Subcommand};
 use crate::repository::GitRepository;
+use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -18,6 +18,40 @@ enum Command {
     Init {
         path: Option<PathBuf>,
     },
+    CatFile {
+        #[arg(
+            value_name="TYPE",
+            value_parser = clap::builder::PossibleValuesParser::new(
+                ["blob", "commit", "tag", "tree"])
+        )]
+        object_type: String,
+        sha: String,
+    },
+    HashObject {
+        #[arg(short, long)]
+        write: bool,
+        #[arg(
+            short,
+            long,
+            value_name = "TYPE",
+            value_parser = clap::builder::PossibleValuesParser::new(
+            ["blob", "commit", "tag", "tree"])
+        )]
+        object_type: String,
+        #[arg(value_name = "FILE")]
+        file_path: PathBuf,
+    },
+    Log,
+    Commit {
+        message: String,
+    },
+    Checkout {
+        branch: String,
+    },
+    Rm {
+        pathspec: PathBuf,
+    },
+    Status,
 }
 
 
@@ -35,5 +69,6 @@ fn main() {
             }
             GitRepository::create_new_repo(p);
         }
+        _ => {}
     }
 }
