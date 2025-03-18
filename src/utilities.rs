@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -50,14 +51,14 @@ pub fn path_should_not_exist(path: &PathBuf, message: &str) {
     }
 }
 
-pub fn deserialize_kv_with_message(data: &Vec<u8>) -> (HashMap<String, String>, String) {
+pub fn deserialize_kv_with_message(data: &Vec<u8>) -> (IndexMap<String, String>, String) {
     let string_rep = String::from_utf8(data.clone());
     if string_rep.is_err() {
         die!("Failed to parse commit data");
     }
     let string_rep = string_rep.unwrap();
     let mut is_message = false;
-    let mut header: HashMap<String, String> = HashMap::new();
+    let mut header: IndexMap<String, String> = IndexMap::new();
     let mut message = String::new();
     let mut last_key: Option<String> = None;
     for line in string_rep.lines() {
@@ -94,4 +95,10 @@ pub fn deserialize_kv_with_message(data: &Vec<u8>) -> (HashMap<String, String>, 
         }
     }
     (header, message)
+}
+
+pub fn serialize_kv_with_message(header: &HashMap<String, String>, message: &str) {
+    for (key, val) in header.into_iter() {
+
+    }
 }

@@ -1,14 +1,14 @@
-use std::collections::HashMap;
-use std::fs;
+use crate::utilities::deserialize_kv_with_message;
 use crate::{create_path_or_die, die};
+use derive_is_enum_variant::is_enum_variant;
 use flate2::read::{ZlibDecoder, ZlibEncoder};
+use flate2::Compression;
+use indexmap::IndexMap;
+use sha1::{Digest, Sha1};
+use std::fs;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
-use derive_is_enum_variant::is_enum_variant;
-use flate2::Compression;
-use sha1::{Digest, Sha1};
-use crate::utilities::deserialize_kv_with_message;
 
 #[derive(is_enum_variant)]
 pub enum GitObjectType {
@@ -120,14 +120,14 @@ impl GitObject {
 }
 
 pub struct GitCommit {
-    header: HashMap<String, String>,
+    header: IndexMap<String, String>,
     message: String,
 }
 
 impl GitCommit {
     pub fn new() -> Self {
         Self {
-            header: HashMap::new(),
+            header: IndexMap::new(),
             message: String::new(),
         }
     }
