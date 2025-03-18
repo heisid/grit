@@ -156,3 +156,66 @@ impl Display for GitCommit {
         Ok(())
     }
 }
+
+struct GitLeaf {
+    mode: String,
+    path: String,
+    sha: String,
+}
+
+struct GitTree {
+    records: Vec<GitLeaf>,
+}
+
+impl GitTree {
+    pub fn new() -> Self {
+        Self { records: Vec::new() }
+    }
+
+    fn parse_leaf(record: &[u8], offset: &mut usize) -> GitLeaf {
+        // wacky
+        let space_idx = record.iter().position(|&b| b == b' ');
+        if space_idx.is_none() {
+            die!("Malformed tree");
+        }
+        let mode_vec = record[..space_idx.unwrap()].to_vec();
+        let mode = String::from_utf8(mode_vec);
+        if mode.is_err() { die!("Malformed tree") }
+        *offset += space_idx.unwrap();
+
+        let record = &record[space_idx.unwrap() + 1..];
+        let zero_byte_idx = record.iter().position(|&b| b == 0);
+        if zero_byte_idx.is_none() {
+            die!("Malformed tree");
+        }
+        let path_vec = record[..zero_byte_idx.unwrap()].to_vec();
+        let path = String::from_utf8(path_vec);
+        if path.is_err() { die!("Malformed tree") }
+        *offset += zero_byte_idx.unwrap();
+
+        let record = &record[zero_byte_idx.unwrap() + 1..];
+        if record.len() < 20 {
+            die!("Malformed tree");
+        }
+        *offset += 21;
+
+        let sha = String::from_utf8(record.to_vec());
+        if sha.is_err() { die!("Malformed tree") }
+
+        GitLeaf {
+            mode: mode.unwrap(),
+            path: path.unwrap(),
+            sha: sha.unwrap(),
+        }
+    }
+
+    fn parse(data: &Vec<u8>) -> Self {
+        let mut records: Vec<GitLeaf> = Vec::new();
+        let mut offset: usize = 0;
+        while offset < data.len() {
+            let leaf = Self::parse_leaf(&data[offset..], &mut offset);
+            records.push(leaf);
+        }
+        Self { records }
+    }
+}
