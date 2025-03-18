@@ -71,8 +71,10 @@ pub fn deserialize_kv_with_message(data: &Vec<u8>) -> (HashMap<String, String>, 
             continue;
         }
 
+        // continuation of previous value (multiline value)
         if line.starts_with(" ") && last_key.is_some() {
             let key = last_key.clone().unwrap();
+            let line = &line[1..]; // trim first space
             match header.get(&key) {
                 Some(val) => {
                     let mut new_val = val.clone();
