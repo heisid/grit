@@ -75,7 +75,10 @@ impl GitRepository {
     pub fn cat_file(&self, object_type: GitObjectType, sha: &str) {
         match object_type {
             GitObjectType::Commit => {
-                let path = self.gitdir.join(&sha[..2]).join(&sha[2..]);
+                let path = self.gitdir
+                    .join("objects")
+                    .join(&sha[..2])
+                    .join(&sha[2..]);
                 let git_object = GitObject::from_file(path);
                 let git_commit = GitCommit::from_git_object(git_object);
                 println!("{}", git_commit);
