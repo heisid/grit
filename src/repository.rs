@@ -5,6 +5,7 @@ use ini::ini;
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
+use crate::object::{GitCommit, GitObject, GitObjectType};
 
 pub struct GitRepository {
     pub worktree: PathBuf,
@@ -69,5 +70,17 @@ impl GitRepository {
             die!("Failed to write config file");
         }
         println!("Git repository initialized in {}", repo.worktree.display());
+    }
+
+    pub fn cat_file(&self, object_type: GitObjectType, sha: &str) {
+        match object_type {
+            GitObjectType::Commit => {
+                let path = self.gitdir.join(&sha[..2]).join(&sha[2..]);
+                let git_object = GitObject::from_file(path);
+                let git_commit = GitCommit::from_git_object(git_object);
+                println!("{}", git_commit);
+            }
+            _ => {}
+        }
     }
 }

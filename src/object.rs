@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use crate::utilities::{deserialize_kv_with_message, serialize_kv_with_message};
 use crate::{create_path_or_die, die};
 use derive_is_enum_variant::is_enum_variant;
@@ -142,5 +143,16 @@ impl GitCommit {
 
     pub fn serialize(&self) -> Vec<u8> {
         serialize_kv_with_message(&self.header, self.message.as_str())
+    }
+}
+
+impl Display for GitCommit {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for (k, v) in self.header {
+            write!(f, "{} {}\n", k, v)?;
+        }
+        write!(f, "\n")?;
+        write!(f, "{}", self.message)?;
+        Ok(())
     }
 }

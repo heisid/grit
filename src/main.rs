@@ -5,6 +5,7 @@ mod object;
 use crate::repository::GitRepository;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use crate::object::{GitObject, GitObjectType};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -68,6 +69,19 @@ fn main() {
                 }
             }
             GitRepository::create_new_repo(p);
+        }
+        Command::CatFile { object_type, sha} => {
+            // todo detect root otomatis
+            // temporary
+            let repo = GitRepository::from_dir(PathBuf::from("."));
+            let object_type = match &object_type[..] {
+                "blob" => GitObjectType::Blob,
+                "commit" => GitObjectType::Commit,
+                "tag" => GitObjectType::Tag,
+                "tree" => GitObjectType::Tree,
+                _ => GitObjectType::Undefined
+            };
+            repo.cat_file(object_type, sha.as_str());
         }
         _ => {}
     }
