@@ -5,9 +5,12 @@ use flate2::read::{ZlibDecoder, ZlibEncoder};
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
+use derive_is_enum_variant::is_enum_variant;
 use flate2::Compression;
 use sha1::{Digest, Sha1};
+use crate::utilities::deserialize_kv_with_message;
 
+#[derive(is_enum_variant)]
 pub enum GitObjectType {
     Blob,
     Commit,
@@ -129,50 +132,11 @@ impl GitCommit {
         }
     }
 
-    fn deserialize(data: &Vec<u8>) -> Self {
-        let string_rep = String::from_utf8(data.clone());
-        if string_rep.is_err() {
-            die!("Failed to parse commit data");
+    pub fn from_git_object(git_object: GitObject) -> Self {
+        if !git_object.object_type.is_commit() {
+            die!("Could not create commit object");
         }
-        let string_rep = string_rep.unwrap();
-        let mut is_message = false;
-        let mut header: HashMap<String, String> = HashMap::new();
-        let mut message = String::new();
-        let mut last_key: Option<String> = None;
-        for line in string_rep.lines() {
-            if is_message {
-                message.push_str(format!("\n{}", line).as_str());
-                continue;
-            }
-
-            if line == "" {
-                is_message = true;
-                continue;
-            }
-
-            if line.starts_with(" ") && last_key.is_some() {
-                let key = last_key.clone().unwrap();
-                match header.get(&key) {
-                    Some(val) => {
-                        let mut new_val = val.clone();
-                        new_val.push_str(format!("\n{}", line).as_str());
-                        header.insert(key, new_val);
-                    }
-                    None => {
-                        header.insert(key, line.to_string());
-                    }
-                }
-            } else {
-                let mut line_iter = line.splitn(2, ' ');
-                let key = line_iter.next().unwrap();
-                let val = line_iter.next().unwrap();
-                header.insert(key.to_string(), val.to_string());
-                last_key = Some(key.to_string());
-            }
-        }
-        Self {
-            header,
-            message,
-        }
+        let (header, message) = deserialize_kv_with_message(&git_object.data);
+        Self { header, message }
     }
 }
