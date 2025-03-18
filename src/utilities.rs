@@ -97,8 +97,14 @@ pub fn deserialize_kv_with_message(data: &Vec<u8>) -> (IndexMap<String, String>,
     (header, message)
 }
 
-pub fn serialize_kv_with_message(header: &HashMap<String, String>, message: &str) {
+pub fn serialize_kv_with_message(header: &IndexMap<String, String>, message: &str) -> Vec<u8> {
+    let mut result: Vec<u8> = Vec::new();
     for (key, val) in header.into_iter() {
-
+        let val = val.replace("\n ", "\n");
+        result.extend(key.as_bytes());
+        result.extend(val.as_bytes());
     }
+    result.push(b'\n');
+    result.extend(message.as_bytes());
+    result
 }

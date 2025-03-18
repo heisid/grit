@@ -1,4 +1,4 @@
-use crate::utilities::deserialize_kv_with_message;
+use crate::utilities::{deserialize_kv_with_message, serialize_kv_with_message};
 use crate::{create_path_or_die, die};
 use derive_is_enum_variant::is_enum_variant;
 use flate2::read::{ZlibDecoder, ZlibEncoder};
@@ -138,5 +138,9 @@ impl GitCommit {
         }
         let (header, message) = deserialize_kv_with_message(&git_object.data);
         Self { header, message }
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        serialize_kv_with_message(&self.header, self.message.as_str())
     }
 }
