@@ -148,7 +148,7 @@ impl GitCommit {
 
 impl Display for GitCommit {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for (k, v) in self.header {
+        for (k, v) in self.header.clone() {
             write!(f, "{} {}\n", k, v)?;
         }
         write!(f, "\n")?;
