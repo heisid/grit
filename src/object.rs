@@ -163,7 +163,7 @@ struct GitLeaf {
     sha: String,
 }
 
-struct GitTree {
+pub struct GitTree {
     records: Vec<GitLeaf>,
 }
 
@@ -209,7 +209,7 @@ impl GitTree {
         }
     }
 
-    fn parse(data: &Vec<u8>) -> Self {
+    pub fn deserialize(data: &Vec<u8>) -> Self {
         let mut records: Vec<GitLeaf> = Vec::new();
         let mut offset: usize = 0;
         while offset < data.len() {
@@ -217,5 +217,32 @@ impl GitTree {
             records.push(leaf);
         }
         Self { records }
+    }
+
+    fn sort(&mut self) {
+        self.records.sort_by(|a, b| {
+            let mut a_path = a.path.clone();
+            if PathBuf::from(&a_path).is_dir() {
+                a_path.push('/');
+            }
+            let mut b_path = b.path.clone();
+            if PathBuf::from(&b_path).is_dir() {
+                b_path.push('/');
+            }
+            a_path.cmp(&b_path)
+        })
+    }
+
+    pub fn serialize(&mut self) -> Vec<u8> {
+        self.sort();
+        let mut result: Vec<u8> = Vec::new();
+        for record in &self.records {
+            result.extend(record.mode.as_bytes().to_vec());
+            result.push(b' ');
+            result.extend(record.path.as_bytes().to_vec());
+            result.push(0);
+            result.extend(record.sha.as_bytes().to_vec());
+        }
+        result
     }
 }
